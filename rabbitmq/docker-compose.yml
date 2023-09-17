@@ -7,4 +7,5 @@ services:
     restart: always
     ports:
       - 8080:8080
-    command: bash -c "python3 script.py"
+    # command: bash -c "python3 script.py"
+    command: bash -c "cd app && go run main.go"
