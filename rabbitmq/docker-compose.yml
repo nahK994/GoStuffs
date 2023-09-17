@@ -1,0 +1,10 @@
+version: '3'
+services:
+
+  receiver:
+    container_name: receiver
+    build: receiver
+    restart: always
+    ports:
+      - 8080:8080
+    command: bash -c "python3 script.py"
