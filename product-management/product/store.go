@@ -16,3 +16,7 @@ func Create(id int, title string, price float64, description string) *Product {
 	}
 	return &product
 }
+
+func (p *Product) UpdatePrice(price float64) {
+	p.price = price
+}

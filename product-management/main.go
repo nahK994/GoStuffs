@@ -13,4 +13,7 @@ func main() {
 	description := input.Get("Input product description: ")
 	p := product.Create(int(id), title, price, description)
 	p.Print()
+	price, _ = strconv.ParseFloat(input.Get("new product price: "), 64)
+	p.UpdatePrice(price)
+	p.Print()
 }
