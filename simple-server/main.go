@@ -3,46 +3,40 @@ import (
 	"fmt"
 	"errors"
 	"net/http"
+	"html/template"
 )
 
 const portNumber = 8080
 
 func Home(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintf(w, "This is HOME page")
+	// _, err := fmt.Fprintf(w, "This is HOME page")
+	err := parseTemplate(w, "home.html")
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
 func About(w http.ResponseWriter, r *http.Request) {
-	_, err := fmt.Fprintf(w, "This is ABOUT page")
+	// _, err := fmt.Fprintf(w, "This is ABOUT page")
+	err := parseTemplate(w, "about.html")
 	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func Divide(w http.ResponseWriter, r *http.Request) {
-	var value, err = divideValues(2,0)
+func parseTemplate(w http.ResponseWriter, temaplateName string) error {
+	parsedTemplate, _ := template.ParseFiles("./templates/" + temaplateName)
+	err := parsedTemplate.Execute(w, nil)
 	if err != nil {
-		fmt.Fprintf(w, "Divided by 0 error")
+		return errors.New("Cannot be parsed")
 	}
-	fmt.Fprintf(w, fmt.Sprintf("%f / %f = %f", 2, 0, value))
-}
-
-func divideValues(x, y float32) (float32, error) {
-	if y == 0 {
-		err := errors.New("Cannot divided by 0")
-		return 0, err
-	}
-
-	return (x/y), nil
+	return nil
 }
 
 func main()  {
 	// fmt.Println("Hello World!!!")
 	http.HandleFunc("/", Home)
 	http.HandleFunc("/about", About)
-	http.HandleFunc("/divide", Divide)
 
 	fmt.Println("Starting application on port:", portNumber)
 	var uri = fmt.Sprintf(":%d", portNumber)
