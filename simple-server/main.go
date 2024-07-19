@@ -4,18 +4,31 @@ import (
 	"net/http"
 )
 
+const portNumber = 8080
+
+func Home(w http.ResponseWriter, r *http.Request) {
+	_, err := fmt.Fprintf(w, "This is HOME page")
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+func About(w http.ResponseWriter, r *http.Request) {
+	_, err := fmt.Fprintf(w, "This is ABOUT page")
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func main()  {
 	fmt.Println("Hello World!!!")
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		n, err := fmt.Fprintf(w, "Hello world!")
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println("Number of bytes written:", n)
-	})
+	http.HandleFunc("/", Home)
+	http.HandleFunc("/about", About)
 
-	err := http.ListenAndServe(":8080", nil)
+	fmt.Println("Starting application on port:", portNumber)
+	var uri = fmt.Sprintf(":%d", portNumber)
+	err := http.ListenAndServe(uri, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
