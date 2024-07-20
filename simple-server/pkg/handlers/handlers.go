@@ -9,7 +9,7 @@ import (
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	// _, err := fmt.Fprintf(w, "This is HOME page")
-	err := render.RenderTemplate(w, "home.html")
+	err := render.RenderTemplate(w, "home.page.html")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -17,7 +17,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 func About(w http.ResponseWriter, r *http.Request) {
 	// _, err := fmt.Fprintf(w, "This is ABOUT page")
-	err := render.RenderTemplate(w, "about.html")
+	err := render.RenderTemplate(w, "about.page.html")
 	if err != nil {
 		fmt.Println(err)
 	}
