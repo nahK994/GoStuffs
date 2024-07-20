@@ -5,7 +5,7 @@ import (
 	"html/template"
 	"errors"
 	"path/filepath"
-	"bytes"
+	// "bytes"
 )
 
 var functions = template.FuncMap{
@@ -23,13 +23,15 @@ func RenderTemplate(w http.ResponseWriter, temaplateName string) error {
 		return errors.New("Template not found")
 	}
 
-	buf := new(bytes.Buffer)
-	_ = temp.Execute(buf, nil)
+	_ = temp.Execute(w, nil)
 
-	_, err = buf.WriteTo(w)
-	if err != nil {
-		return err
-	}
+	// buf := new(bytes.Buffer)
+	// _ = temp.Execute(buf, nil)
+
+	// _, err = buf.WriteTo(w)
+	// if err != nil {
+	// 	return err
+	// }
 
 	// parsedTemplate, _ := template.ParseFiles("./templates/" + temaplateName)
 	// err := parsedTemplate.Execute(w, nil)
