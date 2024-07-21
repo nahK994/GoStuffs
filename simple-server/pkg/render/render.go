@@ -6,6 +6,7 @@ import (
 	"errors"
 	"path/filepath"
 	"simple-server/pkg/config"
+	"simple-server/pkg/models"
 	// "bytes"
 )
 
@@ -19,8 +20,7 @@ var functions = template.FuncMap{
 
 }
 
-
-func RenderTemplate(w http.ResponseWriter, temaplateName string) error {
+func RenderTemplate(w http.ResponseWriter, temaplateName string, templateData *models.TemplateData) error {
 	var templateCache map[string]*template.Template
 
 	if app.UseCache {
@@ -34,7 +34,7 @@ func RenderTemplate(w http.ResponseWriter, temaplateName string) error {
 		return errors.New("Template not found")
 	}
 
-	_ = temp.Execute(w, nil)
+	_ = temp.Execute(w, templateData)
 
 	// parsedTemplate, _ := template.ParseFiles("./templates/" + temaplateName)
 	// err := parsedTemplate.Execute(w, nil)
