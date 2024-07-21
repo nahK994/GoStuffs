@@ -5,8 +5,15 @@ import (
 	"html/template"
 	"errors"
 	"path/filepath"
+	"simple-server/pkg/config"
 	// "bytes"
 )
+
+var app *config.AppConfig
+
+func SetAppConfig(a *config.AppConfig) {
+	app = a
+}
 
 var functions = template.FuncMap{
 
@@ -14,24 +21,20 @@ var functions = template.FuncMap{
 
 
 func RenderTemplate(w http.ResponseWriter, temaplateName string) error {
-	templateCache, err := CreateTemplateCache()
-	if err != nil {
-		return err
+	var templateCache map[string]*template.Template
+
+	if app.UseCache {
+		templateCache = app.TemplateCache
+	} else {
+		templateCache, _ = CreateTemplateCache()
 	}
+
 	temp, ok := templateCache[temaplateName]
 	if !ok {
 		return errors.New("Template not found")
 	}
 
 	_ = temp.Execute(w, nil)
-
-	// buf := new(bytes.Buffer)
-	// _ = temp.Execute(buf, nil)
-
-	// _, err = buf.WriteTo(w)
-	// if err != nil {
-	// 	return err
-	// }
 
 	// parsedTemplate, _ := template.ParseFiles("./templates/" + temaplateName)
 	// err := parsedTemplate.Execute(w, nil)

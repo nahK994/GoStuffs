@@ -3,19 +3,36 @@ import (
 	"fmt"
 	"net/http"
 	"simple-server/pkg/handlers"
+	"simple-server/pkg/config"
+	"simple-server/pkg/render"
+	"log"
 )
 
 const portNumber = 8080
 
 func main()  {
 	// fmt.Println("Hello World!!!")
-	http.HandleFunc("/", handlers.Home)
-	http.HandleFunc("/about", handlers.About)
-
 	fmt.Println("Starting application on port:", portNumber)
-	var uri = fmt.Sprintf(":%d", portNumber)
-	err := http.ListenAndServe(uri, nil)
+
+	templateCache, err := render.CreateTemplateCache()
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal("Cannot create template cache")
+	}
+
+	var app config.AppConfig
+	app.TemplateCache = templateCache
+	app.UseCache = false
+	render.SetAppConfig(&app)
+
+	repo := handlers.CreateRepo(&app)
+	handlers.SetRepo(repo)
+
+	http.HandleFunc("/", handlers.Repo.Home)
+	http.HandleFunc("/about", handlers.Repo.About)
+
+	var uri = fmt.Sprintf(":%d", portNumber)
+	err1 := http.ListenAndServe(uri, nil)
+	if err1 != nil {
+		fmt.Println(err1)
 	}
 }
