@@ -1,4 +1,7 @@
 {{template "base" .}}
 {{define "content"}}
-<h1>About page {{index .StringMap "key"}}</h1>
+<h1>About page</h1>
+<p>{{index .StringMap "name"}}</p>
+<p>{{index .StringMap "email"}}</p>
+<p>{{index .StringMap "phone"}}</p>
 {{end}}

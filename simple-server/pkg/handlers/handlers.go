@@ -35,7 +35,9 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	// _, err := fmt.Fprintf(w, "This is ABOUT page")
 	data := &models.TemplateData{
 		StringMap: map[string]string{
-			"key": "value",
+			"name": "Shomi Khan",
+			"email": "nkskl6@gmail.com",
+			"phone": "+8801676498001",
 		},
 	}
 	err := render.RenderTemplate(w, "about.page.html", data)
