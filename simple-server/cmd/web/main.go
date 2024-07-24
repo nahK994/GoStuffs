@@ -27,12 +27,20 @@ func main()  {
 	repo := handlers.CreateRepo(&app)
 	handlers.SetRepo(repo)
 
-	http.HandleFunc("/", handlers.Repo.Home)
-	http.HandleFunc("/about", handlers.Repo.About)
+	// http.HandleFunc("/", handlers.Repo.Home)
+	// http.HandleFunc("/about", handlers.Repo.About)
 
-	var uri = fmt.Sprintf(":%d", portNumber)
-	err1 := http.ListenAndServe(uri, nil)
-	if err1 != nil {
-		fmt.Println(err1)
+	// var uri = fmt.Sprintf(":%d", portNumber)
+	// err1 := http.ListenAndServe(uri, nil)
+	// if err1 != nil {
+	// 	fmt.Println(err1)
+	// }
+
+	srv := &http.Server{
+        Handler:      routes(&app)
+        Addr:         "127.0.0.1:8000",
 	}
+
+	err := srv.ListenAndServe()
+	log.Fatal(err)
 }
