@@ -9,13 +9,6 @@ import (
 	"simple-server/pkg/render"
 )
 
-// func routes() http.Handler {
-// 	r := mux.NewRouter()
-// 	r.HandleFunc("/", handlers.Repo.Home)
-// 	r.HandleFunc("/about", handlers.Repo.About)
-// 	return r
-// }
-
 const portNumber = 8080
 
 func main() {
