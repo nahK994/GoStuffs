@@ -1,16 +1,24 @@
 package main
+
 import (
 	"fmt"
-	"net/http"
-	"simple-server/pkg/handlers"
-	"simple-server/pkg/config"
-	"simple-server/pkg/render"
 	"log"
+	"net/http"
+	"simple-server/pkg/config"
+	"simple-server/pkg/handlers"
+	"simple-server/pkg/render"
 )
+
+// func routes() http.Handler {
+// 	r := mux.NewRouter()
+// 	r.HandleFunc("/", handlers.Repo.Home)
+// 	r.HandleFunc("/about", handlers.Repo.About)
+// 	return r
+// }
 
 const portNumber = 8080
 
-func main()  {
+func main() {
 	// fmt.Println("Hello World!!!")
 	fmt.Println("Starting application on port:", portNumber)
 
@@ -27,20 +35,12 @@ func main()  {
 	repo := handlers.CreateRepo(&app)
 	handlers.SetRepo(repo)
 
-	// http.HandleFunc("/", handlers.Repo.Home)
-	// http.HandleFunc("/about", handlers.Repo.About)
-
-	// var uri = fmt.Sprintf(":%d", portNumber)
-	// err1 := http.ListenAndServe(uri, nil)
-	// if err1 != nil {
-	// 	fmt.Println(err1)
-	// }
-
+	var uri = fmt.Sprintf("127.0.0.1:%d", portNumber)
 	srv := &http.Server{
-        Handler:      routes(&app)
-        Addr:         "127.0.0.1:8000",
+		Handler: routes(),
+		Addr:    uri,
 	}
 
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	log.Fatal(err)
 }

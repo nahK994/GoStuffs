@@ -1,14 +1,13 @@
 package main
 
-import(
-	"github.com/gorilla/mux"
-	"simple-server/pkg/config"
-	"simple-server/pkg/handlers"
+import (
 	"net/http"
+	"simple-server/pkg/handlers"
+
+	"github.com/gorilla/mux"
 )
 
-
-func routes(app *config.AppConfig) http.Handler {
+func routes() http.Handler {
 	r := mux.NewRouter()
 	r.HandleFunc("/", handlers.Repo.Home)
 	r.HandleFunc("/about", handlers.Repo.About)
