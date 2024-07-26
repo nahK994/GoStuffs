@@ -10,6 +10,7 @@ import (
 
 type APIServer struct {
 	listenAddr string
+	store      *PostgresStore
 }
 
 type APIError struct {
@@ -32,9 +33,10 @@ func makeHTTPhandler(f apiFunc) http.HandlerFunc {
 	}
 }
 
-func NewAPIServer(listenAddr string) *APIServer {
+func NewAPIServer(listenAddr string, store *PostgresStore) *APIServer {
 	return &APIServer{
 		listenAddr: listenAddr,
+		store:      store,
 	}
 }
 
