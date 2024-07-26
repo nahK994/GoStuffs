@@ -20,7 +20,7 @@ type apiFunc func(w http.ResponseWriter, r *http.Request) error
 
 func handleHTTPResponse(w http.ResponseWriter, status int, v any) error {
 	w.WriteHeader(status)
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(v)
 }
 
@@ -42,6 +42,7 @@ func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", makeHTTPhandler(s.handleAccount))
+	router.HandleFunc("/{id}", makeHTTPhandler(s.handleGetAccount))
 	http.ListenAndServe(s.listenAddr, router)
 }
 
@@ -57,8 +58,13 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	account := NewAccount("Shomi", "Khan")
-	return handleHTTPResponse(w, http.StatusOK, account)
+	vars, ok := mux.Vars(r)["id"]
+	if ok {
+		return handleHTTPResponse(w, http.StatusOK, vars)
+	} else {
+		account := NewAccount("Shomi", "Khan")
+		return handleHTTPResponse(w, http.StatusOK, &account)
+	}
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
