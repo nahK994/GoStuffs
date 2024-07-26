@@ -18,7 +18,7 @@ type APIError struct {
 
 type apiFunc func(w http.ResponseWriter, r *http.Request) error
 
-func handleHTTPError(w http.ResponseWriter, status int, v any) error {
+func handleHTTPResponse(w http.ResponseWriter, status int, v any) error {
 	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(v)
@@ -27,7 +27,7 @@ func handleHTTPError(w http.ResponseWriter, status int, v any) error {
 func makeHTTPhandler(f apiFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(w, r); err != nil {
-			handleHTTPError(w, http.StatusBadRequest, APIError{Error: err.Error()})
+			handleHTTPResponse(w, http.StatusBadRequest, APIError{Error: err.Error()})
 		}
 	}
 }
@@ -41,7 +41,7 @@ func NewAPIServer(listenAddr string) *APIServer {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/a", makeHTTPhandler(s.handleAccount))
+	router.HandleFunc("/", makeHTTPhandler(s.handleAccount))
 	http.ListenAndServe(s.listenAddr, router)
 }
 
@@ -57,7 +57,8 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
+	account := NewAccount("Shomi", "Khan")
+	return handleHTTPResponse(w, http.StatusOK, account)
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
