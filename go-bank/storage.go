@@ -1,6 +1,10 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+
+	_ "github.com/lib/pq"
+)
 
 type Storage interface {
 	CreateAccount(*Account) error
@@ -14,7 +18,7 @@ type PostgresStore struct {
 }
 
 func NewPostgresStore() (*PostgresStore, error) {
-	connStr := "postgres://user:password@localhost:5432/go_bank?sslmode=verify-full"
+	connStr := "postgres://user:password@localhost:5432/go_bank?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
