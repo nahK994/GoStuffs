@@ -3,7 +3,7 @@ services:
 
   db:
     container_name: db
-    image: postgres:13-alpine
+    image: postgres:13
     restart: always
     ports:
       - 5432:5432
