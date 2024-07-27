@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 
 	_ "github.com/lib/pq"
 )
@@ -71,7 +72,22 @@ func (p *PostgresStore) DeleteAccount(id int) error {
 }
 
 func (p *PostgresStore) GetAccountByID(id int) (*Account, error) {
-	return nil, nil
+	query := `select * from account where id=$1`
+	rows, err := p.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	account := new(Account)
+	if rows.Next() {
+		if err = rows.Scan(&account.ID, &account.FirstName, &account.LastName, &account.Number, &account.Balance, &account.CreatedAt); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("not found")
+	}
+
+	return account, nil
 }
 
 func (p *PostgresStore) GetAccounts() ([]*Account, error) {

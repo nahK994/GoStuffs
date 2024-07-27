@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
@@ -44,7 +45,7 @@ func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", makeHTTPhandler(s.handleAccount))
-	router.HandleFunc("/{id}", makeHTTPhandler(s.handleGetAccount))
+	router.HandleFunc("/{id}", makeHTTPhandler(s.handleGetAccountByID))
 	http.ListenAndServe(s.listenAddr, router)
 }
 
@@ -60,19 +61,26 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	// vars, ok := mux.Vars(r)["id"]
-	// if ok {
-	// 	return handleHTTPResponse(w, http.StatusOK, vars)
-	// } else {
-	// 	account := NewAccount("Shomi", "Khan")
-	// 	return handleHTTPResponse(w, http.StatusOK, account)
-	// }
 	accounts, err := s.store.GetAccounts()
 	if err != nil {
 		return err
 	}
 
 	return handleHTTPResponse(w, http.StatusOK, accounts)
+}
+
+func (s *APIServer) handleGetAccountByID(w http.ResponseWriter, r *http.Request) error {
+	idVar, ok := mux.Vars(r)["id"]
+	if !ok {
+		return handleHTTPResponse(w, http.StatusBadRequest, nil)
+	}
+
+	id, _ := strconv.Atoi(idVar)
+	account, err := s.store.GetAccountByID(id)
+	if err != nil {
+		return err
+	}
+	return handleHTTPResponse(w, http.StatusOK, account)
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
