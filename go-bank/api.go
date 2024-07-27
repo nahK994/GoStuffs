@@ -60,13 +60,19 @@ func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
-	vars, ok := mux.Vars(r)["id"]
-	if ok {
-		return handleHTTPResponse(w, http.StatusOK, vars)
-	} else {
-		account := NewAccount("Shomi", "Khan")
-		return handleHTTPResponse(w, http.StatusOK, account)
+	// vars, ok := mux.Vars(r)["id"]
+	// if ok {
+	// 	return handleHTTPResponse(w, http.StatusOK, vars)
+	// } else {
+	// 	account := NewAccount("Shomi", "Khan")
+	// 	return handleHTTPResponse(w, http.StatusOK, account)
+	// }
+	accounts, err := s.store.GetAccounts()
+	if err != nil {
+		return err
 	}
+
+	return handleHTTPResponse(w, http.StatusOK, accounts)
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
