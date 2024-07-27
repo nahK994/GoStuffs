@@ -53,7 +53,12 @@ func (p *PostgresStore) CreateAccountTable() error {
 }
 
 func (p *PostgresStore) CreateAccount(a *Account) error {
-	return nil
+	query := `
+		insert into account (first_name, last_name, number, balance, created_at)
+		values ($1, $2, $3, $4, $5)
+	`
+	_, err := p.db.Query(query, a.FirstName, a.LastName, a.Number, a.Balance, a.CreatedAt)
+	return err
 }
 
 func (p *PostgresStore) UpdateAccount(id int) error {
