@@ -106,7 +106,7 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return handleHTTPResponse(w, http.StatusOK, account)
+	return handleHTTPResponse(w, http.StatusCreated, "created")
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request, id int) error {
@@ -114,7 +114,7 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		return err
 	}
-	return handleHTTPResponse(w, http.StatusNoContent, "account deleted")
+	return handleHTTPResponse(w, http.StatusNoContent, "deleted")
 }
 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
