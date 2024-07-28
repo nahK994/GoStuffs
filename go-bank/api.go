@@ -110,11 +110,15 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request, id int) error {
+	if _, err := s.store.GetAccountByID(id); err != nil {
+		return err
+	}
+
 	err := s.store.DeleteAccount(id)
 	if err != nil {
 		return err
 	}
-	return handleHTTPResponse(w, http.StatusNoContent, "deleted")
+	return handleHTTPResponse(w, http.StatusOK, "deleted")
 }
 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {

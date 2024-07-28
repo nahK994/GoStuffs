@@ -83,7 +83,7 @@ func (p *PostgresStore) GetAccountByID(id int) (*Account, error) {
 	}
 
 	if !rows.Next() {
-		return nil, errors.New("not found")
+		return nil, errors.New("account not found")
 	}
 
 	account, err := scanRow(rows)
