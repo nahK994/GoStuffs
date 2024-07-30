@@ -6,9 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 )
+
+const secret = "asdf"
 
 type APIServer struct {
 	listenAddr string
@@ -21,16 +26,16 @@ type APIError struct {
 
 type apiFunc func(w http.ResponseWriter, r *http.Request) error
 
-func handleHTTPResponse(w http.ResponseWriter, status int, v any) error {
+func handleResponse(w http.ResponseWriter, status int, v any) error {
 	w.WriteHeader(status)
 	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(v)
 }
 
-func makeHTTPhandler(f apiFunc) http.HandlerFunc {
+func handleError(f apiFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := f(w, r); err != nil {
-			handleHTTPResponse(w, http.StatusBadRequest, APIError{Error: err.Error()})
+			handleResponse(w, http.StatusBadRequest, APIError{Error: err.Error()})
 		}
 	}
 }
@@ -45,10 +50,45 @@ func NewAPIServer(listenAddr string, store *PostgresStore) *APIServer {
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/{id}", makeHTTPhandler(s.handleAccountByID))
-	router.HandleFunc("/", makeHTTPhandler(s.handleAccount))
-	router.HandleFunc("/transfer", makeHTTPhandler(s.handleTransfer))
+	router.HandleFunc("/{id}", middleware(handleError(s.handleAccountByID)))
+	router.HandleFunc("/", handleError(s.handleAccount))
+	router.HandleFunc("/transfer", handleError(s.handleTransfer))
 	http.ListenAndServe(s.listenAddr, router)
+}
+
+func validateJWT(tokenString string) (*jwt.Token, error) {
+	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(secret), nil
+	})
+}
+
+func createJWT(account *Account) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"accountNumber": account.Number,
+		"expiresAt":     time.Now().Add(time.Hour),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(secret))
+	return tokenString, err
+}
+
+func middleware(f http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Middlware initiated")
+
+		token := strings.Split(r.Header.Get("Authorization"), " ")[1]
+		if _, err := validateJWT(token); err != nil {
+			handleResponse(w, http.StatusBadRequest, APIError{Error: "authorization failed"})
+			return
+		}
+
+		f(w, r)
+	}
 }
 
 func (s *APIServer) handleAccountByID(w http.ResponseWriter, r *http.Request) error {
@@ -86,7 +126,7 @@ func (s *APIServer) handleGetAccountList(w http.ResponseWriter, r *http.Request)
 		return err
 	}
 
-	return handleHTTPResponse(w, http.StatusOK, accounts)
+	return handleResponse(w, http.StatusOK, accounts)
 }
 
 func (s *APIServer) handleGetAccountDetails(w http.ResponseWriter, r *http.Request, id int) error {
@@ -94,7 +134,7 @@ func (s *APIServer) handleGetAccountDetails(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		return err
 	}
-	return handleHTTPResponse(w, http.StatusOK, account)
+	return handleResponse(w, http.StatusOK, account)
 }
 
 func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
@@ -107,7 +147,18 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return handleHTTPResponse(w, http.StatusCreated, "created")
+	token, err := createJWT(account)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Token:", token)
+
+	resp := CreateAccountResponse{
+		token: token,
+		id:    account.ID,
+	}
+
+	return handleResponse(w, http.StatusCreated, resp)
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request, id int) error {
@@ -119,7 +170,7 @@ func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		return err
 	}
-	return handleHTTPResponse(w, http.StatusOK, "deleted")
+	return handleResponse(w, http.StatusOK, "deleted")
 }
 
 func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
@@ -128,7 +179,7 @@ func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error
 		return err
 	}
 	defer r.Body.Close()
-	return handleHTTPResponse(w, http.StatusOK, transferReq)
+	return handleResponse(w, http.StatusOK, transferReq)
 }
 
 func getID(r *http.Request) (int, error) {
