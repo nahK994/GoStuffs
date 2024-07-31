@@ -47,7 +47,7 @@ func (p *PostgresStore) CreateAccountTable() error {
 			last_name varchar(50),
 			number serial,
 			balance serial,
-			password varchar(50),
+			password varchar(200),
 			created_at timestamp
 		)
 	`
@@ -58,7 +58,7 @@ func (p *PostgresStore) CreateAccountTable() error {
 func (p *PostgresStore) CreateAccount(a *Account) error {
 	query := `
 		insert into account (first_name, last_name, number, balance, password, created_at)
-		values ($1, $2, $3, $4, $5)
+		values ($1, $2, $3, $4, $5, $6)
 	`
 	_, err := p.db.Query(query, a.FirstName, a.LastName, a.Number, a.Balance, a.Password, a.CreatedAt)
 	return err
@@ -94,6 +94,24 @@ func (p *PostgresStore) GetAccountByID(id int) (*Account, error) {
 	return account, nil
 }
 
+func (p *PostgresStore) GetAccountByAccNumber(number int) (*Account, error) {
+	query := `select id, password from account where number=$1`
+	rows, err := p.db.Query(query, number)
+	if err != nil {
+		return nil, err
+	}
+
+	if !rows.Next() {
+		return nil, errors.New("account not found")
+	}
+
+	account := new(Account)
+	if err := rows.Scan(&account.ID, &account.Password); err != nil {
+		return nil, err
+	}
+	return account, nil
+}
+
 func (p *PostgresStore) GetAccounts() ([]*Account, error) {
 	query := `select * from account`
 	rows, err := p.db.Query(query)
@@ -115,7 +133,7 @@ func (p *PostgresStore) GetAccounts() ([]*Account, error) {
 
 func scanRow(row *sql.Rows) (*Account, error) {
 	account := new(Account)
-	if err := row.Scan(&account.ID, &account.FirstName, &account.LastName, &account.Number, &account.Balance, &account.CreatedAt); err != nil {
+	if err := row.Scan(&account.ID, &account.FirstName, &account.LastName, &account.Number, &account.Balance, &account.Password, &account.CreatedAt); err != nil {
 		return nil, err
 	}
 	return account, nil

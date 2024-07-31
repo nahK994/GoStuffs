@@ -51,6 +51,7 @@ func NewAPIServer(listenAddr string, store *PostgresStore, sign string) *APIServ
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/login", handleError(s.login))
 	router.HandleFunc("/{id}", s.middleware(handleError(s.handleAccountByID)))
 	router.HandleFunc("/", handleError(s.handleAccount))
 	router.HandleFunc("/transfer", handleError(s.handleTransfer))
@@ -59,6 +60,12 @@ func (s *APIServer) Run() {
 
 func (s *APIServer) validateJWT(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		type AuthToken struct {
+			Id        int
+			ExpiresAt time.Time
+			jwt.RegisteredClaims
+		}
+
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -89,7 +96,7 @@ func (s *APIServer) validateJWT(tokenString string) (*jwt.Token, error) {
 func (s *APIServer) createJWT(account *Account) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":        account.ID,
-		"expiresAt": time.Now().Add(time.Minute),
+		"expiresAt": time.Now().Add(time.Hour),
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
@@ -162,7 +169,12 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewDecoder(r.Body).Decode(accountInfo); err != nil {
 		return err
 	}
-	account := NewAccount(accountInfo.FirstName, accountInfo.LastName)
+
+	hashedPassword, err := hashPassword(accountInfo.Password)
+	if err != nil {
+		return err
+	}
+	account := NewAccount(accountInfo.FirstName, accountInfo.LastName, hashedPassword)
 	if err := s.store.CreateAccount(account); err != nil {
 		return err
 	}
@@ -189,6 +201,30 @@ func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error
 	}
 	defer r.Body.Close()
 	return handleResponse(w, http.StatusOK, transferReq)
+}
+
+func (s *APIServer) login(w http.ResponseWriter, r *http.Request) error {
+	loginReq := new(LoginRequest)
+	if err := json.NewDecoder(r.Body).Decode(loginReq); err != nil {
+		return err
+	}
+
+	account, err := s.store.GetAccountByAccNumber(loginReq.Number)
+	if err != nil {
+		return err
+	}
+	if !checkPasswordHash(loginReq.Password, account.Password) {
+		return errors.New("wrong credential")
+	}
+	token, err := s.createJWT(account)
+	if err != nil {
+		return err
+	}
+	resp := LoginResponse{
+		ID:    account.ID,
+		Token: token,
+	}
+	return handleResponse(w, http.StatusOK, &resp)
 }
 
 func getID(r *http.Request) (int, error) {
