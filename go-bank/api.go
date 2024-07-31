@@ -11,13 +11,13 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
-const secret = "asdf"
-
 type APIServer struct {
-	listenAddr string
-	store      *PostgresStore
+	listenAddr   string
+	store        *PostgresStore
+	jwtSignature string
 }
 
 type APIError struct {
@@ -40,30 +40,31 @@ func handleError(f apiFunc) http.HandlerFunc {
 	}
 }
 
-func NewAPIServer(listenAddr string, store *PostgresStore) *APIServer {
+func NewAPIServer(listenAddr string, store *PostgresStore, sign string) *APIServer {
 	return &APIServer{
-		listenAddr: listenAddr,
-		store:      store,
+		listenAddr:   listenAddr,
+		store:        store,
+		jwtSignature: sign,
 	}
 }
 
 func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/{id}", middleware(handleError(s.handleAccountByID)))
+	router.HandleFunc("/{id}", s.middleware(handleError(s.handleAccountByID)))
 	router.HandleFunc("/", handleError(s.handleAccount))
 	router.HandleFunc("/transfer", handleError(s.handleTransfer))
 	http.ListenAndServe(s.listenAddr, router)
 }
 
-func validateJWT(tokenString string) (*jwt.Token, error) {
+func (s *APIServer) validateJWT(tokenString string) (*jwt.Token, error) {
 	return jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
 		token, err := jwt.ParseWithClaims(tokenString, &AuthToken{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(secret), nil
+			return []byte(s.jwtSignature), nil
 		})
 		if err != nil {
 			return nil, err
@@ -81,27 +82,27 @@ func validateJWT(tokenString string) (*jwt.Token, error) {
 			return nil, fmt.Errorf("token expired")
 		}
 
-		return []byte(secret), nil
+		return []byte(s.jwtSignature), nil
 	})
 }
 
-func createJWT(account *Account) (string, error) {
+func (s *APIServer) createJWT(account *Account) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":        account.ID,
 		"expiresAt": time.Now().Add(time.Minute),
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString([]byte(secret))
+	tokenString, err := token.SignedString([]byte(s.jwtSignature))
 	return tokenString, err
 }
 
-func middleware(f http.HandlerFunc) http.HandlerFunc {
+func (s *APIServer) middleware(f http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Middlware initiated")
 
 		token := strings.Split(r.Header.Get("Authorization"), " ")[1]
-		if _, err := validateJWT(token); err != nil {
+		if _, err := s.validateJWT(token); err != nil {
 			handleResponse(w, http.StatusBadRequest, APIError{Error: "authorization failed"})
 			return
 		}
@@ -166,8 +167,6 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	// fmt.Println("Token:", token)
-
 	return handleResponse(w, http.StatusCreated, "created")
 }
 
@@ -200,4 +199,14 @@ func getID(r *http.Request) (int, error) {
 
 	id, _ := strconv.Atoi(strID)
 	return id, nil
+}
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }

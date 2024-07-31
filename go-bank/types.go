@@ -41,5 +41,6 @@ func NewAccount(firstName string, lastName string) *Account {
 		Number:    int64(rand.Intn(100000000)),
 		Balance:   0,
 		CreatedAt: time.Now().UTC(),
+		Password:  "",
 	}
 }

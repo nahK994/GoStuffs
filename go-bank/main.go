@@ -14,7 +14,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	server := NewAPIServer("127.0.0.1:8000", store)
+	server := NewAPIServer("127.0.0.1:8000", store, "asdf")
 	fmt.Println("Starting server on", server.listenAddr)
 	server.Run()
 }
