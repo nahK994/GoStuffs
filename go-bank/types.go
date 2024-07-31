@@ -3,6 +3,8 @@ package main
 import (
 	"math/rand"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type CreateAccountRequest struct {
@@ -10,9 +12,14 @@ type CreateAccountRequest struct {
 	LastName  string `json:"lastName"`
 }
 
+type AuthToken struct {
+	Id        int
+	ExpiresAt time.Time
+	jwt.RegisteredClaims
+}
+
 type CreateAccountResponse struct {
 	token string
-	id    int
 }
 
 type TransferRequest struct {

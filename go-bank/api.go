@@ -62,14 +62,33 @@ func validateJWT(tokenString string) (*jwt.Token, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
+		token, err := jwt.ParseWithClaims(tokenString, &AuthToken{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte(secret), nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		if !token.Valid {
+			return nil, fmt.Errorf("token not valid")
+		}
+
+		claims, ok := token.Claims.(*AuthToken)
+		if !ok {
+			return nil, fmt.Errorf("cannot get auth info")
+		}
+
+		if !(claims.ExpiresAt.After(time.Now()) || claims.ExpiresAt.Equal(time.Now())) {
+			return nil, fmt.Errorf("token expired")
+		}
+
 		return []byte(secret), nil
 	})
 }
 
 func createJWT(account *Account) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"accountNumber": account.Number,
-		"expiresAt":     time.Now().Add(time.Hour),
+		"id":        account.ID,
+		"expiresAt": time.Now().Add(time.Minute),
 	})
 
 	// Sign and get the complete encoded token as a string using the secret
@@ -147,18 +166,9 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	token, err := createJWT(account)
-	if err != nil {
-		return err
-	}
-	fmt.Println("Token:", token)
+	// fmt.Println("Token:", token)
 
-	resp := CreateAccountResponse{
-		token: token,
-		id:    account.ID,
-	}
-
-	return handleResponse(w, http.StatusCreated, resp)
+	return handleResponse(w, http.StatusCreated, &CreateAccountResponse{token: token})
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request, id int) error {
