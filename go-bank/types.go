@@ -10,16 +10,13 @@ import (
 type CreateAccountRequest struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
+	Password  string `json:"password"`
 }
 
 type AuthToken struct {
 	Id        int
 	ExpiresAt time.Time
 	jwt.RegisteredClaims
-}
-
-type CreateAccountResponse struct {
-	token string
 }
 
 type TransferRequest struct {
@@ -34,6 +31,7 @@ type Account struct {
 	Number    int64     `json:"number"`
 	Balance   int64     `json:"balance"`
 	CreatedAt time.Time `json:"createdAt"`
+	Password  string    `json:"password"`
 }
 
 func NewAccount(firstName string, lastName string) *Account {
