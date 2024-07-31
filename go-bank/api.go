@@ -168,7 +168,7 @@ func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) 
 
 	// fmt.Println("Token:", token)
 
-	return handleResponse(w, http.StatusCreated, &CreateAccountResponse{token: token})
+	return handleResponse(w, http.StatusCreated, "created")
 }
 
 func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request, id int) error {
