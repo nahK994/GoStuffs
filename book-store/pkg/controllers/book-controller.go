@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"book-store/pkg/config"
+	"book-store/pkg/models"
 	"encoding/json"
-	"go-book-store/pkg/config"
-	"go-book-store/pkg/models"
 	"net/http"
 	"strconv"
 

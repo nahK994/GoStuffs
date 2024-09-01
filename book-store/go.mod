@@ -1,4 +1,4 @@
-module go-book-store
+module book-store
 
 go 1.23.0
 

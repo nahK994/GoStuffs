@@ -1,8 +1,8 @@
 package config
 
 import (
+	"book-store/pkg/models"
 	"fmt"
-	"go-book-store/pkg/models"
 	"log"
 	"os"
 
