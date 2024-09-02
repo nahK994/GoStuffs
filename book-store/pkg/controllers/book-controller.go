@@ -16,45 +16,87 @@ func GetBooks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(books)
 }
 
-func GetBook(w http.ResponseWriter, r *http.Request) {
+func GetBook(w http.ResponseWriter, r *http.Request) *models.Response {
+	response := new(models.Response)
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
 	if err != nil {
-		http.Error(w, "Invalid book ID", http.StatusBadRequest)
-		return
+		response = &models.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       "Invalid book ID",
+		}
+		return response
 	}
 
 	var book models.Book
 	result := config.DB.First(&book, id)
 	if result.Error != nil {
-		http.Error(w, "Book not found", http.StatusNotFound)
-		return
+		response = &models.Response{
+			StatusCode: http.StatusNotFound,
+			Body:       "Book not found",
+		}
+	} else {
+		response = &models.Response{
+			StatusCode: http.StatusOK,
+			Body:       book,
+		}
 	}
 
-	json.NewEncoder(w).Encode(book)
+	return response
 }
 
-func CreateBook(w http.ResponseWriter, r *http.Request) {
+func CreateBook(w http.ResponseWriter, r *http.Request) *models.Response {
 	var book models.Book
 	json.NewDecoder(r.Body).Decode(&book)
 	config.DB.Create(&book)
-	json.NewEncoder(w).Encode(book)
+	return &models.Response{
+		StatusCode: http.StatusCreated,
+		Body:       book,
+	}
 }
 
-func UpdateBook(w http.ResponseWriter, r *http.Request) {
+func UpdateBook(w http.ResponseWriter, r *http.Request) *models.Response {
+	response := new(models.Response)
 	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		response = &models.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       "Invalid book ID",
+		}
+		return response
+	}
+
 	var book models.Book
 	config.DB.First(&book, id)
 	json.NewDecoder(r.Body).Decode(&book)
 	config.DB.Save(&book)
-	json.NewEncoder(w).Encode(book)
+
+	response = &models.Response{
+		StatusCode: http.StatusOK,
+		Body:       book,
+	}
+	return response
 }
 
-func DeleteBook(w http.ResponseWriter, r *http.Request) {
+func DeleteBook(w http.ResponseWriter, r *http.Request) *models.Response {
+	response := new(models.Response)
 	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		response = &models.Response{
+			StatusCode: http.StatusBadRequest,
+			Body:       "Invalid book ID",
+		}
+		return response
+	}
+
 	var book models.Book
 	config.DB.Delete(&book, id)
-	json.NewEncoder(w).Encode("Book deleted successfully")
+
+	response = &models.Response{
+		StatusCode: http.StatusNoContent,
+		Body:       "Book deleted successfully",
+	}
+	return response
 }

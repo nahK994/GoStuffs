@@ -10,3 +10,8 @@ type Book struct {
 	Author string `json:"author"`
 	ISBN   string `json:"isbn"`
 }
+
+type Response struct {
+	StatusCode int
+	Body       interface{}
+}
