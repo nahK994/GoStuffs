@@ -18,9 +18,19 @@ func GetBooks(w http.ResponseWriter, r *http.Request) {
 
 func GetBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	id, _ := strconv.Atoi(params["id"])
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		http.Error(w, "Invalid book ID", http.StatusBadRequest)
+		return
+	}
+
 	var book models.Book
-	config.DB.First(&book, id)
+	result := config.DB.First(&book, id)
+	if result.Error != nil {
+		http.Error(w, "Book not found", http.StatusNotFound)
+		return
+	}
+
 	json.NewEncoder(w).Encode(book)
 }
 

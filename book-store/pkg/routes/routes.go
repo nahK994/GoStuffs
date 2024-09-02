@@ -1,21 +1,20 @@
 package routes
 
 import (
-	"book-store/pkg/config"
 	"book-store/pkg/controllers"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
 func RegisterRoutes() *mux.Router {
-	config.InitDB()
 	r := mux.NewRouter()
 
-	r.HandleFunc("/books", controllers.GetBooks).Methods("GET")
-	r.HandleFunc("/books/{id}", controllers.GetBook).Methods("GET")
-	r.HandleFunc("/books", controllers.CreateBook).Methods("POST")
-	r.HandleFunc("/books/{id}", controllers.UpdateBook).Methods("PUT")
-	r.HandleFunc("/books/{id}", controllers.DeleteBook).Methods("DELETE")
+	r.HandleFunc("/books", controllers.GetBooks).Methods(http.MethodGet)
+	r.HandleFunc("/books/{id}", controllers.GetBook).Methods(http.MethodGet)
+	r.HandleFunc("/books", controllers.CreateBook).Methods(http.MethodPost)
+	r.HandleFunc("/books/{id}", controllers.UpdateBook).Methods(http.MethodPut)
+	r.HandleFunc("/books/{id}", controllers.DeleteBook).Methods(http.MethodDelete)
 
 	return r
 }
