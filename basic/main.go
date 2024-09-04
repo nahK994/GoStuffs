@@ -1,11 +1,13 @@
 package main
 
-import interface_example "basic/interface"
+import "basic/datatypes"
 
 func main() {
-	interface_example.Interface1()
+	// interface_example.Interface1()
 	// interface_example.Interface2()
 	// encalsulation.Encalsulation()
 	// composition.Composition()
-	// arrayslice.Arrayslice()
+	// datatypes.Array()
+	// datatypes.String()
+	datatypes.Typecasting()
 }
