@@ -11,7 +11,6 @@ type User struct {
 	Balance float64 `json:"balance"`
 }
 
-// CreateUser inserts a new user into the database
 func CreateUser(user *User) error {
 	conn := db.Connect()
 	defer conn.Close()
@@ -24,7 +23,6 @@ func CreateUser(user *User) error {
 	return nil
 }
 
-// UpdateUser updates an existing user
 func UpdateUser(id string, user *User) error {
 	conn := db.Connect()
 	defer conn.Close()
@@ -37,7 +35,6 @@ func UpdateUser(id string, user *User) error {
 	return nil
 }
 
-// DeleteUser deletes a user
 func DeleteUser(id string) error {
 	conn := db.Connect()
 	defer conn.Close()
@@ -50,7 +47,6 @@ func DeleteUser(id string) error {
 	return nil
 }
 
-// CreditBalance adds an amount to the user's balance
 func CreditBalance(id string, amount float64) error {
 	conn := db.Connect()
 	defer conn.Close()
@@ -63,7 +59,6 @@ func CreditBalance(id string, amount float64) error {
 	return nil
 }
 
-// DebitBalance deducts an amount from the user's balance
 func DebitBalance(id string, amount float64) error {
 	conn := db.Connect()
 	defer conn.Close()
@@ -76,30 +71,27 @@ func DebitBalance(id string, amount float64) error {
 	return nil
 }
 
-// TransferMoney transfers money from one user to another
 func TransferMoney(from string, to string, amount float64) error {
 	conn := db.Connect()
 	defer conn.Close()
 
-	// Start a transaction
 	tx, err := conn.Begin()
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
 
-	// Deduct from sender
 	if _, err := tx.Exec("UPDATE users SET balance = balance - $1 WHERE id = $2", amount, from); err != nil {
+		tx.Rollback()
 		return fmt.Errorf("could not debit balance from user %s: %v", from, err)
 	}
 
-	// Add to receiver
 	if _, err := tx.Exec("UPDATE users SET balance = balance + $1 WHERE id = $2", amount, to); err != nil {
+		tx.Rollback()
 		return fmt.Errorf("could not credit balance to user %s: %v", to, err)
 	}
 
-	// Commit transaction
 	if err := tx.Commit(); err != nil {
+		tx.Rollback()
 		return err
 	}
 	return nil
