@@ -20,6 +20,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
 
@@ -37,6 +38,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
 }
 
@@ -67,6 +69,7 @@ func CreditBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode("Balance credited successfully")
 }
 
@@ -86,6 +89,7 @@ func DebitBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode("Balance debited successfully")
 }
 
@@ -105,5 +109,6 @@ func TransferMoney(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode("Transfer successful")
 }
