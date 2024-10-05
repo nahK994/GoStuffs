@@ -12,7 +12,7 @@ type User struct {
 }
 
 func CreateUser(user *User) error {
-	conn := db.Connect()
+	conn := db.DB
 	defer conn.Close()
 
 	query := "INSERT INTO users (name, balance) VALUES ($1, $2) RETURNING id"
@@ -24,7 +24,7 @@ func CreateUser(user *User) error {
 }
 
 func UpdateUser(id string, user *User) error {
-	conn := db.Connect()
+	conn := db.DB
 	defer conn.Close()
 
 	query := "UPDATE users SET name = $1, balance = $2 WHERE id = $3"
@@ -36,7 +36,7 @@ func UpdateUser(id string, user *User) error {
 }
 
 func DeleteUser(id string) error {
-	conn := db.Connect()
+	conn := db.DB
 	defer conn.Close()
 
 	query := "DELETE FROM users WHERE id = $1"
@@ -48,7 +48,7 @@ func DeleteUser(id string) error {
 }
 
 func CreditBalance(id string, amount float64) error {
-	conn := db.Connect()
+	conn := db.DB
 	defer conn.Close()
 
 	query := "UPDATE users SET balance = balance + $1 WHERE id = $2"
@@ -60,7 +60,7 @@ func CreditBalance(id string, amount float64) error {
 }
 
 func DebitBalance(id string, amount float64) error {
-	conn := db.Connect()
+	conn := db.DB
 	defer conn.Close()
 
 	query := "UPDATE users SET balance = balance - $1 WHERE id = $2"
@@ -72,7 +72,7 @@ func DebitBalance(id string, amount float64) error {
 }
 
 func TransferMoney(from string, to string, amount float64) error {
-	conn := db.Connect()
+	conn := db.DB
 	defer conn.Close()
 
 	tx, err := conn.Begin()

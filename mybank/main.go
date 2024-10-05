@@ -12,7 +12,8 @@ import (
 )
 
 func main() {
-	db := db.Connect()
+	db.InitDB("postgres://user:password@localhost:5432/mybank?sslmode=disable")
+	db := db.DB
 
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
