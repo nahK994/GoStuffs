@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// CreateUser creates a new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -24,7 +23,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-// UpdateUser updates an existing user
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
@@ -42,7 +40,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-// DeleteUser deletes a user
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
@@ -53,7 +50,6 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// CreditBalance credits balance to a user
 func CreditBalance(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
@@ -73,7 +69,6 @@ func CreditBalance(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("Balance credited successfully")
 }
 
-// DebitBalance debits balance from a user
 func DebitBalance(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := params["id"]
@@ -93,7 +88,6 @@ func DebitBalance(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode("Balance debited successfully")
 }
 
-// TransferMoney transfers money between users
 func TransferMoney(w http.ResponseWriter, r *http.Request) {
 	var transfer struct {
 		From   string  `json:"from"`
