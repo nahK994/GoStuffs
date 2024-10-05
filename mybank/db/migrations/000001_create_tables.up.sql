@@ -1,0 +1,5 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    balance DECIMAL(10, 2) DEFAULT 0.00
+);
