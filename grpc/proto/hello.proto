@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package hello;
 
-option go_package = "grpc/proto;pb";
+option go_package = ".;pb";
 
 
 service HelloService {
