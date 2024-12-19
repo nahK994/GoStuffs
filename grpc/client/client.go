@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	pb "grpc/pb/grpc/proto"
+	"grpc/pb"
 	"log"
 	"time"
 
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("localhost:50050", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
@@ -22,7 +22,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	resp, err := client.SayHello(ctx, &pb.HelloRequest{Name: "Shomi"})
+	resp, err := client.SayHello(ctx, &pb.HelloRequest{Name: "Shomi Khan", Email: "nkskl6@gmail.com"})
 	if err != nil {
 		log.Fatalf("Error while calling SayHello: %v", err)
 	}
